@@ -12,7 +12,7 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
 public class MainActivity extends AppCompatActivity {
-    String fileInfoString = "";
+    String fileInfoString = "fff";
     StorageMetadata theMetadata = null;
 
     @Override
