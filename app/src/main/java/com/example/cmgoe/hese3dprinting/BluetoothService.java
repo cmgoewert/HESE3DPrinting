@@ -28,6 +28,7 @@ public class BluetoothService extends Thread {
             temp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord("3D Printing Client", ourUUID);
         }catch (IOException e){
             Log.i("BluetoothService: ","Socket's listen() method failed");
+            System.out.println("caught here");
             e.printStackTrace();
         }
 
