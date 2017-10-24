@@ -22,13 +22,16 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
@@ -43,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     Button printButton;
     BluetoothDevice selectedDevice;
     ConnectedThread mConnectedThread;
+    File localFile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +54,9 @@ public class MainActivity extends AppCompatActivity {
         StorageReference ref = storage.getReference();
         deviceList = new ArrayList<BluetoothDevice>();
 
-        StorageReference model = ref.child("/jigsaw-curved_phallic.STL");
+
+        //StorageReference model = ref.child("/jigsaw-curved_phallic.STL");
+        StorageReference model = ref.child("/microscope knob.gcode");
 
 //        model.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
 //            @Override
@@ -60,7 +66,28 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
 
+        try {
+            localFile = File.createTempFile("design-", ".gcode");
+            model.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
 
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    System.out.println("FAILED");
+                }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+            localFile = null;
+            System.out.println("FAILED");
+        }
+
+        System.out.println(localFile.getName() + " FILE NAME");
+        System.out.println(localFile.exists());
+        System.out.println(localFile.getTotalSpace());
 
 
         //Enable bluetooth adapter
@@ -157,6 +184,19 @@ public class MainActivity extends AppCompatActivity {
 
             in = tempIn;
             out = tempOut;
+
+            byte[] convertedFile = FileToByteConverter.convertFile(localFile);
+
+//            for(int i = 0; i < convertedFile.length; i++){
+//                System.out.println(convertedFile[i]);
+//            }
+
+            try{
+                out.write(convertedFile);
+            } catch (IOException e){
+                e.printStackTrace();
+                System.out.println("something failed");
+            }
         }
 
     }
