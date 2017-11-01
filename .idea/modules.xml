@@ -4,8 +4,6 @@
     <modules>
       <module fileurl="file://C:\Users\cmgoe\AndroidStudioProjects\HESE3DPrinting\HESE.iml" filepath="C:\Users\cmgoe\AndroidStudioProjects\HESE3DPrinting\HESE.iml" />
       <module fileurl="file://$PROJECT_DIR$/HESE3DPrinting.iml" filepath="$PROJECT_DIR$/HESE3DPrinting.iml" />
-      <module fileurl="file://$PROJECT_DIR$/HESE3DPrinting.iml" filepath="$PROJECT_DIR$/HESE3DPrinting.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
