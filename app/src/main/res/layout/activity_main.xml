@@ -7,7 +7,7 @@
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
     android:paddingBottom="16dp"
-    tools:context="com.example.cmgoe.hese3dprinting.MainActivity">
+    tools:context="com.example.cmgoe.hese3dprinting.Interface.MainActivity">
 
     <ListView
         android:id="@+id/designs_list_view"

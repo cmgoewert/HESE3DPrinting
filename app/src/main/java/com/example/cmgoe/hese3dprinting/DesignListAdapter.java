@@ -8,6 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.cmgoe.hese3dprinting.Design;
+import com.example.cmgoe.hese3dprinting.R;
+
 import java.util.ArrayList;
 
 /**

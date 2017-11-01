@@ -1,13 +1,9 @@
-package com.example.cmgoe.hese3dprinting;
+package com.example.cmgoe.hese3dprinting.Interface;
 
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,25 +12,18 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
+import com.example.cmgoe.hese3dprinting.BluetoothThread;
+import com.example.cmgoe.hese3dprinting.Design;
+import com.example.cmgoe.hese3dprinting.DesignListAdapter;
+import com.example.cmgoe.hese3dprinting.FirebaseInteraction;
+import com.example.cmgoe.hese3dprinting.R;
 import com.google.firebase.storage.StorageMetadata;
-import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Set;
-import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     String fileInfoString;
@@ -44,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<BluetoothDevice> deviceList;
     Button connectButton;
     Button printButton;
+    private FirebaseInteraction fireb;
     private ListView mListView;
     BluetoothDevice selectedDevice;
     File localFile;
@@ -51,40 +41,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference ref = storage.getReference();
+        fireb = new FirebaseInteraction();
         deviceList = new ArrayList<BluetoothDevice>();
 
+        localFile = fireb.getFile("/microscope knob.gcode");
         //StorageReference model = ref.child("/microscope knob.gcode");
-        StorageReference model = ref.child("/motortest.gcode");
+        //StorageReference model = ref.child("/motortest.gcode");
         //StorageReference model = ref.child("/g28.gcode");
         //StorageReference model = ref.child("PInardenlarged.stl");
-
-        try {
-            localFile = File.createTempFile("design-", ".gcode");
-            model.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    System.out.println(taskSnapshot.getTotalByteCount() + " HERE IS THE TOTAL BYTE COUNT");
-
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    System.out.println("FAILED");
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-            localFile = null;
-            System.out.println("FAILED");
-        }
 
         System.out.println(localFile.getName() + " FILE NAME");
         System.out.println(localFile.exists());
         System.out.println(localFile.getTotalSpace());
         System.out.println(new File(localFile.toString()).length());
-
 
         //Enable bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -162,14 +131,11 @@ public class MainActivity extends AppCompatActivity {
         }});
         dlg.setContentView(listView);
         dlg.show();
-
-
     }
 
     private void print() {
         System.out.println("Printing...");
         connection.sendFile(localFile);
-
     }
 
 }
