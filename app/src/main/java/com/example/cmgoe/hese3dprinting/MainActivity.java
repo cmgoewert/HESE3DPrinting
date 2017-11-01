@@ -44,9 +44,10 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<BluetoothDevice> deviceList;
     Button connectButton;
     Button printButton;
+    private ListView mListView;
     BluetoothDevice selectedDevice;
-    ConnectedThread mConnectedThread;
     File localFile;
+    BluetoothThread connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,23 +55,17 @@ public class MainActivity extends AppCompatActivity {
         StorageReference ref = storage.getReference();
         deviceList = new ArrayList<BluetoothDevice>();
 
-
-        //StorageReference model = ref.child("/jigsaw-curved_phallic.STL");
-        StorageReference model = ref.child("/microscope knob.gcode");
-
-//        model.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
-//            @Override
-//            public void onSuccess(StorageMetadata storageMetadata) {
-//                fileInfoString = storageMetadata.getPath();
-//                System.out.println(storageMetadata.getSizeBytes());
-//            }
-//        });
+        //StorageReference model = ref.child("/microscope knob.gcode");
+        StorageReference model = ref.child("/motortest.gcode");
+        //StorageReference model = ref.child("/g28.gcode");
+        //StorageReference model = ref.child("PInardenlarged.stl");
 
         try {
             localFile = File.createTempFile("design-", ".gcode");
             model.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    System.out.println(taskSnapshot.getTotalByteCount() + " HERE IS THE TOTAL BYTE COUNT");
 
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -88,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println(localFile.getName() + " FILE NAME");
         System.out.println(localFile.exists());
         System.out.println(localFile.getTotalSpace());
+        System.out.println(new File(localFile.toString()).length());
 
 
         //Enable bluetooth adapter
@@ -102,20 +98,17 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-
-        //Finds list of connected devices, adds devices to ArrayList
-        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-         if(pairedDevices.size()> 0){
-             for(BluetoothDevice device : pairedDevices){
-                 deviceList.add(device);
-                 Log.i("Device Found: ", device.getName());
-             }
-         }
-
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ArrayList<Design> designs = new ArrayList<Design>();
+        for(int i = 0; i < 50; i++){
+            designs.add(new Design("Item Number " + i,"This is a short description for item number "+i,Integer.toString(i)));
+        }
+
+        mListView = (ListView) findViewById(R.id.designs_list_view);
+        DesignListAdapter adapter = new DesignListAdapter(this, designs);
+        mListView.setAdapter(adapter);
 
         connectButton = (Button) findViewById(R.id.connect_button);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -133,12 +126,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        TextView fileInfo = (TextView)findViewById(R.id.fileInfo);
-        fileInfo.setText(fileInfoString);
     }
 
 
     private void selectDevice(){
+
+        //Finds list of connected devices, adds devices to ArrayList
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+        if(pairedDevices.size()> 0){
+            for(BluetoothDevice device : pairedDevices){
+                deviceList.add(device);
+                Log.i("Device Found: ", device.getName());
+
+            }
+        }
+
         final Dialog dlg = new Dialog(this);
         ListView listView = new ListView(this);
         final String [] deviceNames = new String[deviceList.size()];
@@ -149,8 +151,12 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {public void onItemClick(AdapterView<?> parent, View view, int position, long id){
             Log.i("Device Selected: ", deviceNames[position]);
             selectedDevice = deviceList.get(position);
-            ConnectThread mConnectThread = new ConnectThread(selectedDevice);
-            mConnectThread.start();
+//            ConnectThread mConnectThread = new ConnectThread(selectedDevice);
+//            mConnectThread.start();
+            connection = new BluetoothThread(selectedDevice, localFile);
+            connection.start();
+            System.out.println(localFile.exists() + "does it exist");
+
             dlg.hide();
 
         }});
@@ -162,83 +168,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void print() {
         System.out.println("Printing...");
-    }
+        connection.sendFile(localFile);
 
-    private class ConnectedThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final InputStream in;
-        private final OutputStream out;
-
-        public ConnectedThread(BluetoothSocket socket){
-            mmSocket = socket;
-            InputStream tempIn = null;
-            OutputStream tempOut = null;
-            try {
-                tempIn = socket.getInputStream();
-                tempOut = socket.getOutputStream();
-                System.out.println("it worked?");
-            } catch (IOException e){
-                e.printStackTrace();
-                System.out.println("caught something");
-            }
-
-            in = tempIn;
-            out = tempOut;
-
-            byte[] convertedFile = FileToByteConverter.convertFile(localFile);
-
-//            for(int i = 0; i < convertedFile.length; i++){
-//                System.out.println(convertedFile[i]);
-//            }
-
-            try{
-                out.write(convertedFile);
-            } catch (IOException e){
-                e.printStackTrace();
-                System.out.println("something failed");
-            }
-        }
-
-    }
-
-    private class ConnectThread extends Thread {
-        private final BluetoothSocket mmSocket;
-        private final BluetoothDevice mmDevice;
-        private final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-        public ConnectThread(BluetoothDevice device) {
-            BluetoothSocket tmp = null;
-            mmDevice = device;
-            try {
-                tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("caught something");
-            }
-            mmSocket = tmp;
-        }
-        public void run() {
-            mBluetoothAdapter.cancelDiscovery();
-            try {
-                mmSocket.connect();
-                System.out.println(mmDevice.getName());
-            } catch (IOException connectException) {
-                try {
-                    mmSocket.close();
-                } catch (IOException closeException) {
-                    System.out.println("caught something");
-                }
-                return;
-            }
-
-            mConnectedThread = new ConnectedThread(mmSocket);
-        }
-        public void cancel() {
-            try {
-                mmSocket.close();
-            } catch (IOException e) {
-                System.out.println("caught something");
-            }
-        }
     }
 
 }
