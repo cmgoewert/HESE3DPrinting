@@ -25,7 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
     String fileInfoString;
     StorageMetadata theMetadata = null;
     static final int REQUEST_BT_ENABLE = 1;
@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.designs_list_view);
         DesignListAdapter adapter = new DesignListAdapter(this, designs);
         mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(this);
 
         connectButton = (Button) findViewById(R.id.connect_button);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -97,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void onItemClick(AdapterView<?> l, View v, int position, long id) {
+        Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
+        // Then you start a new Activity via Intent
+        Intent intent = new Intent();
+        intent.setClass(this, DesignDetailActivity.class);
+        intent.putExtra("position", position);
+        // Or / And
+        intent.putExtra("id", id);
+        startActivity(intent);
+    }
 
     private void selectDevice(){
 
