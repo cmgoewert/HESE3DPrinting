@@ -44,11 +44,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         fireb = new FirebaseInteraction();
         deviceList = new ArrayList<BluetoothDevice>();
 
-        localFile = fireb.getFile("/microscope knob.gcode");
-        //StorageReference model = ref.child("/microscope knob.gcode");
-        //StorageReference model = ref.child("/motortest.gcode");
-        //StorageReference model = ref.child("/g28.gcode");
-        //StorageReference model = ref.child("PInardenlarged.stl");
+        //localFile = fireb.getFile("/microscope knob.gcode");
+        //localFile = fireb.getFile("/motortest.gcode");
+        localFile = fireb.getFile("/UltimakerRobot_support.gcode");
+        //localFile = fireb.getFile("/m119.gcode");
+        //localFile = fireb.getFile("/spatula.gcode");
+        //localFile = fireb.getFile("/g28.gcode");
 
         System.out.println(localFile.getName() + " FILE NAME");
         System.out.println(localFile.exists());
