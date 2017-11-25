@@ -17,12 +17,12 @@ import java.util.ArrayList;
  * Created by cmgoe on 11/1/2017.
  */
 
-public class FirebaseInteraction {
-    private FirebaseStorage storage;
+public class FirebaseFiles {
+    private com.google.firebase.storage.FirebaseStorage storage;
     private StorageReference ref;
 
-    public FirebaseInteraction() {
-        storage = FirebaseStorage.getInstance();
+    public FirebaseFiles() {
+        storage = com.google.firebase.storage.FirebaseStorage.getInstance();
         ref = storage.getReference();
 
     }

@@ -1,9 +1,11 @@
 package com.example.cmgoe.hese3dprinting.Interface;
 
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +19,8 @@ import android.widget.Toast;
 import com.example.cmgoe.hese3dprinting.BluetoothThread;
 import com.example.cmgoe.hese3dprinting.Design;
 import com.example.cmgoe.hese3dprinting.DesignListAdapter;
-import com.example.cmgoe.hese3dprinting.FirebaseInteraction;
+import com.example.cmgoe.hese3dprinting.FirebaseDB;
+import com.example.cmgoe.hese3dprinting.FirebaseFiles;
 import com.example.cmgoe.hese3dprinting.R;
 import com.google.firebase.storage.StorageMetadata;
 
@@ -33,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ArrayList<BluetoothDevice> deviceList;
     Button connectButton;
     Button printButton;
-    private FirebaseInteraction fireb;
+    private FirebaseFiles fireb;
     private ListView mListView;
     BluetoothDevice selectedDevice;
     File localFile;
@@ -41,8 +44,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        fireb = new FirebaseInteraction();
+        fireb = new FirebaseFiles();
         deviceList = new ArrayList<BluetoothDevice>();
+        this.setUpBluetooth();
+        System.out.println("back in main");
+        //new AsyncClass(this).execute();
+        //new MyAsyncTask(this).execute();
+        //final ProgressDialog dialog = ProgressDialog.show(this, "Please wait..", "Loading files..", true);
 
         //localFile = fireb.getFile("/microscope knob.gcode");
         //localFile = fireb.getFile("/motortest.gcode");
@@ -51,35 +59,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //localFile = fireb.getFile("/spatula.gcode");
         //localFile = fireb.getFile("/g28.gcode");
 
-        System.out.println(localFile.getName() + " FILE NAME");
-        System.out.println(localFile.exists());
-        System.out.println(localFile.getTotalSpace());
-        System.out.println(new File(localFile.toString()).length());
-
-        //Enable bluetooth adapter
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter == null){
-            Toast.makeText(this, "This device does not support Bluetooth", Toast.LENGTH_LONG).show();
-        }else{
-            //Checks if bluetooth is enabled and enables it if it's not enabled
-            if(!mBluetoothAdapter.isEnabled()){
-                Intent bluetoothStartIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(bluetoothStartIntent, REQUEST_BT_ENABLE);
-            }
-        }
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ArrayList<Design> designs = new ArrayList<Design>();
-        for(int i = 0; i < 50; i++){
-            designs.add(new Design("Item Number " + i,"This is a short description for item number "+i,Integer.toString(i)));
-        }
-
-        mListView = (ListView) findViewById(R.id.designs_list_view);
-        DesignListAdapter adapter = new DesignListAdapter(this, designs);
-        mListView.setAdapter(adapter);
-        mListView.setOnItemClickListener(this);
+//        ArrayList<Design> designs = new ArrayList<Design>();
+//        for(int i = 0; i < 50; i++){
+//            designs.add(new Design("Item Number " + i,"This is a short description for item number "+i,Integer.toString(i)));
+//        }
 
         connectButton = (Button) findViewById(R.id.connect_button);
         connectButton.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +85,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     }
 
+    private void setUpBluetooth(){
+        //Enable bluetooth adapter
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter == null){
+            Toast.makeText(this, "This device does not support Bluetooth", Toast.LENGTH_LONG).show();
+        }else{
+            //Checks if bluetooth is enabled and enables it if it's not enabled
+            if(!mBluetoothAdapter.isEnabled()){
+                Intent bluetoothStartIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(bluetoothStartIntent, REQUEST_BT_ENABLE);
+            }
+        }
+    }
+
     public void onItemClick(AdapterView<?> l, View v, int position, long id) {
         Log.i("HelloListView", "You clicked Item: " + id + " at position:" + position);
         // Then you start a new Activity via Intent
@@ -108,6 +108,21 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         // Or / And
         intent.putExtra("id", id);
         startActivity(intent);
+    }
+
+    public void setList(ArrayList<String> files){
+        ArrayList<Design> designs = new ArrayList<Design>();
+        for(int i = 0; i < files.size(); i++){
+            designs.add(new Design(files.get(i),"This is a short description for item "+i,Integer.toString(i)));
+            System.out.println(files.get(i) + "inside setList");
+        }
+
+        System.out.println("called setList");
+
+        mListView = (ListView) findViewById(R.id.designs_list_view);
+        DesignListAdapter adapter = new DesignListAdapter(this, designs);
+        mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(this);
     }
 
     private void selectDevice(){
@@ -151,3 +166,5 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 }
+
+
